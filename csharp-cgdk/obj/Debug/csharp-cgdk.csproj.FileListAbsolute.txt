@@ -2,3 +2,8 @@ F:\Users\RGenius\Downloads\csharp-cgdk\bin\Debug\csharp-cgdk.exe
 F:\Users\RGenius\Downloads\csharp-cgdk\bin\Debug\csharp-cgdk.pdb
 F:\Users\RGenius\Downloads\csharp-cgdk\obj\Debug\csharp-cgdk.exe
 F:\Users\RGenius\Downloads\csharp-cgdk\obj\Debug\csharp-cgdk.pdb
+F:\RGenius\Programming\CSharp\CodeHockey2014\csharp-cgdk\obj\Debug\csharp-cgdk.exe
+F:\RGenius\Programming\CSharp\CodeHockey2014\csharp-cgdk\obj\Debug\csharp-cgdk.pdb
+F:\RGenius\Programming\CSharp\CodeHockey2014\csharp-cgdk\bin\Debug\csharp-cgdk.exe
+F:\RGenius\Programming\CSharp\CodeHockey2014\csharp-cgdk\bin\Debug\csharp-cgdk.pdb
+F:\RGenius\Programming\CSharp\CodeHockey2014\csharp-cgdk\obj\Debug\csharp-cgdk.csprojResolveAssemblyReference.cache

@@ -18,18 +18,61 @@ namespace Com.CodeGame.CodeHockey2014.DevKit.CSharpCgdk
             {
                 if (world.Puck.OwnerHockeyistId == self.Id)
                 {
-                    Player opponentPlayer = world.GetOpponentPlayer();
-
-                    double netX = 0.5D * (opponentPlayer.NetBack + opponentPlayer.NetFront);
-                    double netY = 0.5D * (opponentPlayer.NetBottom + opponentPlayer.NetTop);
-                    netY += (self.Y < netY ? 0.5D : -0.5D) * game.GoalNetHeight;
-
-                    double angleToNet = self.GetAngleTo(netX, netY);
-                    move.Turn = angleToNet;
-
-                    if (Math.Abs(angleToNet) < STRIKE_ANGLE)
+                    
+                    Random rand = new Random();
+                    Hockeyist nearestFriendly = getNearestFriendly(self.X, self.Y, world);
+                    if ((nearestFriendly != null) && (nearestFriendly.State == HockeyistState.Active)
+                        && (rand.Next(0,1) == 1))
                     {
-                        move.Action = ActionType.Swing;
+                        move.Turn = self.GetAngleTo(nearestFriendly);
+                        move.PassPower = 0.6;
+                        move.Action = ActionType.Pass;
+                    }
+                    else
+                    {
+                        Player opponentPlayer = world.GetOpponentPlayer();
+                        if (isGoalPosition(self.X, self.Y, world) || (isGameWithoutGoalie(game, world)))
+                        {
+                            move.SpeedUp = -0.5D;
+                          
+                            double netX = 0.5D * (opponentPlayer.NetBack + opponentPlayer.NetFront);
+                            double netY = 0.5D * (opponentPlayer.NetBottom + opponentPlayer.NetTop);
+                            netY += (self.Y < netY ? 0.5D : -0.5D) * game.GoalNetHeight;
+
+                            double angleToNet = self.GetAngleTo(netX, netY);
+                            move.Turn = angleToNet;
+
+                            if (Math.Abs(angleToNet) < STRIKE_ANGLE)
+                            {
+                                move.Action = ActionType.Swing;
+                            }
+                        }
+                        else
+                        {
+                            move.SpeedUp = 1.0D;
+                            if (opponentPlayer.NetFront < (world.Width / 2))//если ворота противника на левой стороне поля
+                            {
+                                if (self.Y > (game.WorldHeight/2))//если хокеист на нижней половине поля
+                                {
+                                    move.Turn = self.GetAngleTo(300, 576);
+                                }
+                                else//иначе хокеист на верхней половине поля
+                                {
+                                    move.Turn = self.GetAngleTo(300, 317);
+                                }
+                            }
+                            else//иначе правая сторона поля
+                            {
+                                if (self.Y > (game.WorldHeight / 2))//если хокеист на нижней половине поля
+                                {
+                                    move.Turn = self.GetAngleTo(724, 576);
+                                }
+                                else//иначе хокеист на верхней половине поля
+                                {
+                                    move.Turn = self.GetAngleTo(724, 317);
+                                }
+                            }
+                        }
                     }
                 }
                 else
@@ -51,33 +94,98 @@ namespace Com.CodeGame.CodeHockey2014.DevKit.CSharpCgdk
             }
             else
             {
-                move.SpeedUp = 1.0D;
-                move.Turn = self.GetAngleTo(world.Puck);
-                move.Action = ActionType.TakePuck;
+                //if (world.Puck.)
+                {
+                    move.SpeedUp = 1.0D;
+                    move.Turn = self.GetAngleTo(world.Puck);
+                    move.Action = ActionType.TakePuck;
+                }
             }
         }
 
-        private static Hockeyist getNearestOpponent(double x, double y, World world) {
-        Hockeyist nearestOpponent = null;
-        double nearestOpponentRange = 0.0D;
-
-        foreach (Hockeyist hockeyist in world.Hockeyists) {
-            if (hockeyist.IsTeammate || hockeyist.Type == HockeyistType.Goalie
-                    || hockeyist.State == HockeyistState.KnockedDown
-                    || hockeyist.State == HockeyistState.Resting) {
-                continue;
-            }
-
-            double opponentRange = hypot(x - hockeyist.X, y - hockeyist.Y);
-
-            if (nearestOpponent == null || opponentRange < nearestOpponentRange) {
-                nearestOpponent = hockeyist;
-                nearestOpponentRange = opponentRange;
-            }
+        private static bool isGameWithoutGoalie(Game game, World world)//игра без вратарей?
+        {
+            if ((game.TickCount > 6000) && //если прошло основное время
+                ((world.GetMyPlayer().GoalCount + world.GetOpponentPlayer().GoalCount) == 0)) //и если счёт 0:0
+                return true;
+            else
+                return false;
         }
 
-        return nearestOpponent;
-    }
+        private static bool isGoalPosition(double x, double y, World world)
+        {
+            Player opponentPlayer = world.GetOpponentPlayer();
+            if (opponentPlayer.NetFront < (world.Width / 2))//если ворота противника на левой стороне поля
+            {
+                if ((x >= 262) && (x <= 400) && (y >= 554) && (y <= 720))
+                    return true;
+                else
+                    if ((x >= 262) && (x <= 400) && (y >= 173) && (y <= 339))
+                        return true;
+                    else
+                        return false;
+            }
+            else//иначе правая сторона поля
+            {
+                if ((x >= 624) && (x <= 762) && (y >= 554) && (y <= 720))
+                    return true;
+                else
+                    if ((x >= 624) && (x <= 762) && (y >= 173) && (y <= 339))
+                        return true;
+                    else
+                        return false;
+            }
+            
+        }
+
+        private static Hockeyist getNearestOpponent(double x, double y, World world) 
+        {
+            Hockeyist nearestOpponent = null;
+            double nearestOpponentRange = 0.0D;
+
+            foreach (Hockeyist hockeyist in world.Hockeyists) 
+            {
+                if (hockeyist.IsTeammate || hockeyist.Type == HockeyistType.Goalie
+                        || hockeyist.State == HockeyistState.KnockedDown
+                        || hockeyist.State == HockeyistState.Resting) 
+                {
+                    continue;
+                }
+
+                double opponentRange = hypot(x - hockeyist.X, y - hockeyist.Y);
+
+                if (nearestOpponent == null || opponentRange < nearestOpponentRange) 
+                {
+                    nearestOpponent = hockeyist;
+                    nearestOpponentRange = opponentRange;
+                }
+            }
+
+            return nearestOpponent;
+        }
+
+        private static Hockeyist getNearestFriendly(double x, double y, World world)
+        {
+            Hockeyist nearestFriendly = null;
+            //double nearestFriendlyRange = 0.0D;
+
+            foreach (Hockeyist hockeyist in world.Hockeyists)
+            {
+                if ((hockeyist.Id != world.Puck.OwnerHockeyistId) && (hockeyist.IsTeammate) 
+                    && (hockeyist.Type == HockeyistType.Versatile) && (hockeyist.State == HockeyistState.Active))
+                {
+                    //double opponentRange = hypot(x - hockeyist.X, y - hockeyist.Y);
+
+                    //if (nearestFriendly == null || opponentRange < nearestFriendlyRange)
+                    //{
+                        nearestFriendly = hockeyist;
+                      //  nearestFriendlyRange = opponentRange;
+                    //}
+                }  
+            }
+
+            return nearestFriendly;
+        }
 
         private static double hypot(double a, double b)
         {
